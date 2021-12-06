@@ -1,0 +1,89 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "advent-of-code"
+dynamic = ["version"]
+description = 'Repository for Advent of Code challenges.'
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = []
+authors = [
+  { name = "jude253" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = []
+
+[project.urls]
+Documentation = "https://github.com/jude253/AdventOfCode#readme"
+Issues = "https://github.com/jude253/AdventOfCode/issues"
+Source = "https://github.com/jude253/AdventOfCode"
+
+[tool.hatch.version]
+path = "src/advent_of_code/__about__.py"
+
+[tool.hatch.envs.build-tool]
+extra-dependencies = [
+  "mypy>=1.0.0",
+  "ruff~=0.8.1",
+]
+[tool.hatch.envs.build-tool.scripts]
+format = [
+  "ruff format {args:src/advent_of_code tests}",
+  "ruff check {args:src/advent_of_code tests} --fix",
+]
+lint = "ruff check {args:src/advent_of_code tests}"
+types = "mypy --install-types --non-interactive {args:src/advent_of_code tests}"
+check = [
+  "format",
+  "lint",
+  "types",
+]
+
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+
+[tool.coverage.run]
+source_pkgs = ["advent_of_code", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/advent_of_code/__about__.py",
+]
+
+[tool.coverage.paths]
+advent_of_code = ["src/advent_of_code", "*/advent-of-code/src/advent_of_code"]
+tests = ["tests", "*/advent-of-code/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
