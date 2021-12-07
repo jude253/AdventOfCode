@@ -348,6 +348,37 @@ def day6():
     print(np.sum(all_fish))
 
 
+def day7():
+    input = np.array([int(x) for x in read_file('day7.txt').rstrip().split(',')])
+    median = np.median(input)
+    fuel = int(np.sum(np.abs(input - median)))
+    print(fuel)
+
+
+def day7_part2():
+    """
+    brute force approach:
+    """
+    input = np.array([int(x) for x in read_file('day7.txt').rstrip().split(',')])
+    # input = np.array([16,1,2,0,4,2,7,1,2,14]) # test input
+    max_pos = np.max(input)
+    past_fuel_costs = {}
+    possible_aligns_fuel = np.zeros(max_pos + 1)
+    def fuel_cost(x):
+        if x in past_fuel_costs:
+            return past_fuel_costs[x]
+        else:
+            past_fuel_costs[x] = np.sum(np.array(range(x + 1)))
+        return past_fuel_costs[x]
+
+    for align in range(len(possible_aligns_fuel)):
+        dists_from_align = np.abs(input - align)
+        running_fuel_total = 0
+        for crab_dist in dists_from_align:
+            running_fuel_total += fuel_cost(crab_dist)
+        possible_aligns_fuel[align] = running_fuel_total
+    print(int(np.min(possible_aligns_fuel)))
+
 
 if __name__ == '__main__':
-    day6()
+    day7_part2()
