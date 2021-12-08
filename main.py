@@ -380,8 +380,13 @@ def day7_part2():
     print(int(np.min(possible_aligns_fuel)))
 
 
-def day7():
-    input = np.array([x for x in read_file('day8.txt').rstrip().split(',')])
+def day8():
+    input_raw, input = [x for x in read_file('day8.txt').rstrip().split('\n')], []
+    for line in input_raw:
+        output = line.split(' | ')
+        output = output.split(' ')
+        input.append(output)
+    print(input)
     
 
 if __name__ == '__main__':
