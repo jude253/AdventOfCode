@@ -381,13 +381,85 @@ def day7_part2():
 
 
 def day8():
-    input_raw, input = [x for x in read_file('day8.txt').rstrip().split('\n')], []
-    for line in input_raw:
-        output = line.split(' | ')
+    input = [x for x in read_file('day8.txt').rstrip().split('\n')]
+    count, digit_lens = 0, set([2, 4, 3, 7])
+    for line in input:
+        # take the output (part after |)
+        output = line.split(' | ')[1]
+
+        # split the output string on spaces
         output = output.split(' ')
-        input.append(output)
-    print(input)
-    
+
+        # count if 1,4,7, or 8 in output
+        for seven_segment_digit in output:
+            if len(seven_segment_digit) in digit_lens:
+                count += 1
+
+    print(count)
+
+def day8_part2():
+    input = [x for x in read_file('day8.txt').rstrip().split('\n')]
+    total = 0
+    for line in input:
+        # take the output (part after |)
+        all_digits, output = line.split(' | ')
+
+        # split the output string on spaces
+        all_digits, output, output_digits = all_digits.split(' '), [set(digit) for digit in output.split(' ')], []
+        digit_map, len_5, len_6 = [None]*10, [], []
+        for digit in all_digits:
+            if len(digit) == 2:
+                digit_map[1] = set(digit)
+            if len(digit) == 4:
+                digit_map[4] = set(digit)
+            if len(digit) == 3:
+                digit_map[7] = set(digit)
+            if len(digit) == 7:
+                digit_map[8] = set(digit)
+            if len(digit) == 5:
+                len_5.append(set(digit))
+            if len(digit) == 6:
+                len_6.append(set(digit))
+
+        # len 5:
+        for digit in len_5:
+            # find 3:
+            # if 1 in digit, digit is 3
+            if digit_map[1].issubset(digit):
+                digit_map[3] = digit
+            # if len(digit minus 4) = 2, digit is 5
+            elif len(digit - digit_map[4]) == 2:
+                digit_map[5] = digit
+            # if len(digit minus 4) = 3, digit is 2
+            elif len(digit - digit_map[4]) == 3:
+                digit_map[2] = digit
+
+        # find middle segment:
+        middle = digit_map[2].intersection(digit_map[5], digit_map[4])
+
+        # len 6:
+        for digit in len_6:
+            # if middle not in digit, digit is 0
+            if not middle.issubset(digit):
+                digit_map[0] = digit
+            # if len(digit minus 3) = 1, digit is 9
+            elif len(digit - digit_map[3]) == 1:
+                digit_map[9] = digit
+            # if len(digit minus 3) = 2, digit is 6
+            elif len(digit - digit_map[3]) == 2:
+                digit_map[6] = digit
+
+        # convert output digits to integer:
+        for digit in output:
+            output_digits.append(str(digit_map.index(digit)))
+        output_digits = int(''.join(output_digits))
+
+        # add output digits to total:
+        total += output_digits
+    print(total)
+
+
+
 
 if __name__ == '__main__':
-    day8()
+    day8_part2()
