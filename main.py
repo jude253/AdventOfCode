@@ -301,7 +301,7 @@ def day5_part2():
         lines.append(line)
 
     # create map:
-    map = np.zeros((max_val+1, max_val+1))
+    map = np.zeros((max_val + 1, max_val + 1))
 
     # for each line create list of points on line and mark map:
 
@@ -310,11 +310,11 @@ def day5_part2():
         y = line[0, 1], line[1, 1]
         x_step = 1 if x[1] - x[0] <= 0 else -1
         y_step = 1 if y[1] - y[0] <= 0 else -1
-        x_vals = np.arange(x[1], x[0] + x_step*1, x_step)
-        y_vals = np.arange(y[1], y[0] + y_step*1, y_step)
+        x_vals = np.arange(x[1], x[0] + x_step * 1, x_step)
+        y_vals = np.arange(y[1], y[0] + y_step * 1, y_step)
         # print(x_vals, y_vals)
         if len(x_vals) == 1:
-            x_vals = np.ones_like(y_vals)*x_vals[0]
+            x_vals = np.ones_like(y_vals) * x_vals[0]
         if len(y_vals) == 1:
             y_vals = np.ones_like(x_vals) * y_vals[0]
         line_points = list(zip(x_vals, y_vals))
@@ -326,13 +326,12 @@ def day5_part2():
 
 # part 1: 80 days; part 2: 256
 def day6():
-    input, normal_cycle, _8, _7 = np.array([int(x) for x in read_file('day6.txt').rstrip().split(',')]), [0]*7, 0, 0
+    input, normal_cycle, _8, _7 = np.array([int(x) for x in read_file('day6.txt').rstrip().split(',')]), [0] * 7, 0, 0
     number_of_days = 256
     for i in range(7):
         normal_cycle[i] = np.sum(input == i)
 
     for i in range(number_of_days):
-
         # decrement days:
         _0 = normal_cycle.pop(0)
         normal_cycle.append(_0)
@@ -364,6 +363,7 @@ def day7_part2():
     max_pos = np.max(input)
     past_fuel_costs = {}
     possible_aligns_fuel = np.zeros(max_pos + 1)
+
     def fuel_cost(x):
         if x in past_fuel_costs:
             return past_fuel_costs[x]
@@ -397,6 +397,7 @@ def day8():
 
     print(count)
 
+
 def day8_part2():
     input = [x for x in read_file('day8.txt').rstrip().split('\n')]
     total = 0
@@ -406,7 +407,7 @@ def day8_part2():
 
         # split the output string on spaces
         all_digits, output, output_digits = all_digits.split(' '), [set(digit) for digit in output.split(' ')], []
-        digit_map, len_5, len_6 = [None]*10, [], []
+        digit_map, len_5, len_6 = [None] * 10, [], []
         for digit in all_digits:
             if len(digit) == 2:
                 digit_map[1] = set(digit)
@@ -459,7 +460,69 @@ def day8_part2():
     print(total)
 
 
+def day9():
+    input = [list(x) for x in read_file('day9.txt').rstrip().split('\n')]
+    # risk level of a low point is 1 plus its height
+    # What is the sum of the risk levels of all low points on your heightmap?
+    sum_of_risk_levels = 0
+    n, m = len(input), len(input[0])
+
+    for i in range(n):
+        for j in range(m):
+            cur = int(input[i][j])
+            up = 10 if i - 1 < 0 else int(input[i - 1][j])
+            down = 10 if i + 1 >= n else int(input[i + 1][j])
+            left = 10 if j - 1 < 0 else int(input[i][j - 1])
+            right = 10 if j + 1 >= m else int(input[i][j + 1])
+            if cur < up and cur < down and cur < left and cur < right:
+                sum_of_risk_levels += cur + 1
+    print(sum_of_risk_levels)
+
+
+def day9_part2():
+    """
+    strategy:
+        - for each low point
+            - keep counting up down left right if it is bigger until 9 or edge of board reached
+
+    """
+    input = [list(x) for x in read_file('day9.txt').rstrip().split('\n')]
+    n, m, total = len(input), len(input[0]), 1
+    directions, basin_sizes = [[-1, 0], [1, 0], [0, -1], [0, 1]], []
+
+    def is_low_point(i, j):
+        for direction in directions:
+            i1, j1 = i + direction[0], j + direction[1]
+            # for adjacent point that's not an edge, if current point is greater than or equal to adjacent return false
+            if 0 <= i1 < n and 0 <= j1 < m and int(input[i][j]) >= int(input[i1][j1]):
+                return False
+        return True
+
+    def find_size_of_basin(i, j):
+        cur, count, input[i][j] = int(input[i][j]), 1, 9 # count current, change already seen ones to 9
+        # for adjacent point that's not an edge
+        for direction in directions:
+            i1, j1 = i + direction[0], j + direction[1]
+            # if adjacent point that's not an edge and current point < adjacent point < 9 add basin from there to count
+            if 0 <= i1 < n and 0 <= j1 < m and cur < int(input[i1][j1]) < 9:
+                count += find_size_of_basin(i1, j1)
+        return count
+
+    # for each point, if it is a low point, calculate the size of the basin
+    for i in range(n):
+        for j in range(m):
+            if is_low_point(i, j):
+                basin_sizes.append(find_size_of_basin(i, j))
+
+    # get top 3 basins
+    basin_sizes.sort(reverse=True)
+    basin_sizes = basin_sizes[:3]
+
+    # multiply together the top 3 basins
+    for basin_size in basin_sizes:
+        total *= basin_size
+    print(total)
 
 
 if __name__ == '__main__':
-    day8_part2()
+    day9_part2()
