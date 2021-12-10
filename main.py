@@ -524,5 +524,66 @@ def day9_part2():
     print(total)
 
 
+def day10():
+    input = [list(x) for x in read_file('day10.txt').rstrip().split('\n')]
+    opposite = {'(': ')', '{': '}', '[': ']', '<': '>'}
+    char_score = {')': 3, ']': 57, '}': 1197, '>': 25137}
+    total = 0
+
+    # if it is an opener (in  opposites), add its opposite to closers stack, else pop closers stack and see if matches
+    for line in input:
+        closers = []
+        for char in line:
+            if char in opposite:
+                closers.append(opposite[char])
+            else:
+                if len(closers) == 0:
+                    total += char_score[char]
+                    break
+                elif closers[-1] != char:
+                    total += char_score[char]
+                    break
+                else:
+                    closers.pop(-1)
+    print(total)
+
+
+def day10_part2():
+    input = [list(x) for x in read_file('day10.txt').rstrip().split('\n')]
+    opposite = {'(': ')', '{': '}', '[': ']', '<': '>'}
+    char_score = {')': 1, ']': 2, '}': 3, '>': 4}
+    line_totals = []
+
+    # if it is an opener (in  opposites), add its opposite to closers stack, else pop closers stack and see if matches
+    # if there are closers left over at end of line, reverse closers stack and calc score of line
+    for line in input:
+        closers, ignore_line, line_total = [], False, 0
+        for char in line:
+            if char in opposite:
+                closers.append(opposite[char])
+            else:
+                if len(closers) == 0:
+                    ignore_line = True
+                    break
+                elif closers[-1] != char:
+                    ignore_line = True
+                    break
+                else:
+                    closers.pop(-1)
+
+        if not ignore_line:
+            closers = closers[::-1]
+            for char in closers:
+                line_total = 5*line_total + char_score[char]
+            line_totals.append(line_total)
+
+    # sort line totals
+    line_totals.sort()
+    # middle value:
+    print(line_totals[len(line_totals)//2])
+
+
+
+
 if __name__ == '__main__':
-    day9_part2()
+    day10_part2()
