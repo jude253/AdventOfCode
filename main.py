@@ -499,7 +499,7 @@ def day9_part2():
         return True
 
     def find_size_of_basin(i, j):
-        cur, count, input[i][j] = int(input[i][j]), 1, 9 # count current, change already seen ones to 9
+        cur, count, input[i][j] = int(input[i][j]), 1, 9  # count current, change already seen ones to 9
         # for adjacent point that's not an edge
         for direction in directions:
             i1, j1 = i + direction[0], j + direction[1]
@@ -574,13 +574,13 @@ def day10_part2():
         if not ignore_line:
             closers = closers[::-1]
             for char in closers:
-                line_total = 5*line_total + char_score[char]
+                line_total = 5 * line_total + char_score[char]
             line_totals.append(line_total)
 
     # sort line totals
     line_totals.sort()
     # middle value:
-    print(line_totals[len(line_totals)//2])
+    print(line_totals[len(line_totals) // 2])
 
 
 def day11():
@@ -592,13 +592,14 @@ def day11():
     n, m = input.shape
     for step in range(number_of_steps):
         input += increment_step
-        #where this is true, add 1 to surrounding window as long as there are new flashpoints
-        prev_flash_points_coordinates, flash_points_coordinates = set([]), set([tuple(x) for x in np.argwhere(input > 9)])
+        # where this is true, add 1 to surrounding window as long as there are new flashpoints
+        prev_flash_points_coordinates, flash_points_coordinates = set([]), set(
+            [tuple(x) for x in np.argwhere(input > 9)])
         while len(prev_flash_points_coordinates) < len(flash_points_coordinates):
             for fp_coor in flash_points_coordinates:
                 if fp_coor not in prev_flash_points_coordinates:
                     for surrounding_point in surrounding_points:
-                        surrounding_coor = fp_coor+surrounding_point
+                        surrounding_coor = fp_coor + surrounding_point
                         if -1 < surrounding_coor[0] < n and -1 < surrounding_coor[1] < m:
                             input[surrounding_coor[0], surrounding_coor[1]] += 1
             prev_flash_points_coordinates = flash_points_coordinates
@@ -618,13 +619,14 @@ def day11_part2():
     n, m = input.shape
     while np.sum(input == 0) != np.sum(increment_step):
         input += increment_step
-        #where this is true, add 1 to surrounding window as long as there are new flashpoints
-        prev_flash_points_coordinates, flash_points_coordinates = set([]), set([tuple(x) for x in np.argwhere(input > 9)])
+        # where this is true, add 1 to surrounding window as long as there are new flashpoints
+        prev_flash_points_coordinates, flash_points_coordinates = set([]), set(
+            [tuple(x) for x in np.argwhere(input > 9)])
         while len(prev_flash_points_coordinates) < len(flash_points_coordinates):
             for fp_coor in flash_points_coordinates:
                 if fp_coor not in prev_flash_points_coordinates:
                     for surrounding_point in surrounding_points:
-                        surrounding_coor = fp_coor+surrounding_point
+                        surrounding_coor = fp_coor + surrounding_point
                         if -1 < surrounding_coor[0] < n and -1 < surrounding_coor[1] < m:
                             input[surrounding_coor[0], surrounding_coor[1]] += 1
             prev_flash_points_coordinates = flash_points_coordinates
@@ -635,5 +637,83 @@ def day11_part2():
     print(step)
 
 
+def day12():
+    input, graph = [x.split('-') for x in read_file('day12.txt').strip().split('\n')], {}
+    small_tunnels, tunnels_left = set(), set()
+    for tunnels in input:
+        for i, tunnel in enumerate(tunnels):
+            other_tunnel = tunnels[(i + 1) % 2]
+            tunnels_left.add(tunnel)
+            small_tunnels.add(tunnel) if tunnel.islower() else None
+            if tunnel in graph:
+                graph[tunnel].append(other_tunnel)
+            else:
+                graph[tunnel] = [other_tunnel]
+    tunnels_left.remove('start')
+
+    def find_all_paths(graph, start, end, tunnels_left, path=[]):
+        path = path + [start]
+        if start == end:
+            return [path]
+        if start not in graph:
+            return []
+        paths = []
+        for node in graph[start]:
+            if node in tunnels_left:
+                if node in small_tunnels:
+                    tunnels_left.remove(node)
+                    newpaths = find_all_paths(graph, node, end, tunnels_left, path)
+                    tunnels_left.add(node)
+                else:
+                    newpaths = find_all_paths(graph, node, end, tunnels_left, path)
+                for newpath in newpaths:
+                    paths.append(newpath)
+        return paths
+    all_paths = find_all_paths(graph, 'start', 'end', tunnels_left)
+    print(len(all_paths))
+
+
+def day12_part2():
+    input, graph = [x.split('-') for x in read_file('day12.txt').strip().split('\n')], {}
+    small_tunnels, tunnels_left = set(), set()
+    for tunnels in input:
+        for i, tunnel in enumerate(tunnels):
+            other_tunnel = tunnels[(i + 1) % 2]
+            tunnels_left.add(tunnel)
+            small_tunnels.add(tunnel) if tunnel.islower() else None
+            if tunnel in graph:
+                graph[tunnel].append(other_tunnel)
+            else:
+                graph[tunnel] = [other_tunnel]
+    tunnels_left.remove('start')
+
+    def find_all_paths(graph, start, end, tunnels_left, visited_small_2x, path=[]):
+        path = path + [start]
+        if start == end:
+            return [path]
+        if start not in graph:
+            return []
+        paths = []
+        for node in graph[start]:
+            if node in tunnels_left:
+                if node in small_tunnels and visited_small_2x == False:
+                    newpaths = find_all_paths(graph, node, end, tunnels_left, True, path)
+                    tunnels_left.remove(node)
+                    newpaths.extend(find_all_paths(graph, node, end, tunnels_left, visited_small_2x, path))
+                    tunnels_left.add(node)
+                elif node in small_tunnels and visited_small_2x == True:
+                    tunnels_left.remove(node)
+                    newpaths = find_all_paths(graph, node, end, tunnels_left, visited_small_2x, path)
+                    tunnels_left.add(node)
+                else:
+                    newpaths = find_all_paths(graph, node, end, tunnels_left, visited_small_2x, path)
+                for newpath in newpaths:
+                    paths.append(newpath)
+        return paths
+
+    all_paths = set([','.join(path) for path in find_all_paths(graph, 'start', 'end', tunnels_left, False)])
+    print(len(all_paths))
+
+
 if __name__ == '__main__':
-    day11_part2()
+    day12_part2()
