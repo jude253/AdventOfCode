@@ -583,7 +583,57 @@ def day10_part2():
     print(line_totals[len(line_totals)//2])
 
 
+def day11():
+    number_of_steps = 100
+    input = [list(x) for x in read_file('day11.txt').strip().split('\n')]
+    input = np.array([[int(x) for x in line] for line in input])
+    increment_step, flash_count = np.ones_like(input), 0
+    surrounding_points = np.array([[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]])
+    n, m = input.shape
+    for step in range(number_of_steps):
+        input += increment_step
+        #where this is true, add 1 to surrounding window as long as there are new flashpoints
+        prev_flash_points_coordinates, flash_points_coordinates = set([]), set([tuple(x) for x in np.argwhere(input > 9)])
+        while len(prev_flash_points_coordinates) < len(flash_points_coordinates):
+            for fp_coor in flash_points_coordinates:
+                if fp_coor not in prev_flash_points_coordinates:
+                    for surrounding_point in surrounding_points:
+                        surrounding_coor = fp_coor+surrounding_point
+                        if -1 < surrounding_coor[0] < n and -1 < surrounding_coor[1] < m:
+                            input[surrounding_coor[0], surrounding_coor[1]] += 1
+            prev_flash_points_coordinates = flash_points_coordinates
+            flash_points_coordinates = set([tuple(x) for x in np.argwhere(input > 9)])
+        flash_count += np.sum(input > 9)
+        input[input > 9] = 0
+
+    print(flash_count)
+
+
+def day11_part2():
+    step = 0
+    input = [list(x) for x in read_file('day11.txt').strip().split('\n')]
+    input = np.array([[int(x) for x in line] for line in input])
+    increment_step = np.ones_like(input)
+    surrounding_points = np.array([[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]])
+    n, m = input.shape
+    while np.sum(input == 0) != np.sum(increment_step):
+        input += increment_step
+        #where this is true, add 1 to surrounding window as long as there are new flashpoints
+        prev_flash_points_coordinates, flash_points_coordinates = set([]), set([tuple(x) for x in np.argwhere(input > 9)])
+        while len(prev_flash_points_coordinates) < len(flash_points_coordinates):
+            for fp_coor in flash_points_coordinates:
+                if fp_coor not in prev_flash_points_coordinates:
+                    for surrounding_point in surrounding_points:
+                        surrounding_coor = fp_coor+surrounding_point
+                        if -1 < surrounding_coor[0] < n and -1 < surrounding_coor[1] < m:
+                            input[surrounding_coor[0], surrounding_coor[1]] += 1
+            prev_flash_points_coordinates = flash_points_coordinates
+            flash_points_coordinates = set([tuple(x) for x in np.argwhere(input > 9)])
+        input[input > 9] = 0
+        step += 1
+
+    print(step)
 
 
 if __name__ == '__main__':
-    day10_part2()
+    day11_part2()
