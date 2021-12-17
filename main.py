@@ -715,5 +715,65 @@ def day12_part2():
     print(len(all_paths))
 
 
+def day13():
+    coords, folds = [x.split('\n') for x in read_file('day13.txt').strip().split('\n\n')]
+    coords = np.array([[int(x) for x in coord.split(',')] for coord in coords])
+    orig_board_shape = tuple(np.array([1, 1]) + np.max(coords, axis=0))
+    folds = [[fold[fold.find('=')-1:fold.find('=')], int(fold[fold.find('=')+1:])] for fold in folds]
+
+    # create board
+    board = np.zeros(orig_board_shape)
+    # mark board
+    for coord in coords: board[coord[0], coord[1]] = 1
+
+    # transpose board so that it has same orientation as example
+    board = board.T
+
+    # fold board
+    def fold_board(board, fold):
+        # if the fold is on "x=" transpose matrix, then transpose back at end
+        board = board.T if fold[0] == 'x' else board
+        upper, lower = board[:fold[1]], np.flipud(board[fold[1]+1:])
+        board = upper + lower
+        board[board > 1] = 1
+        board = board.T if fold[0] == 'x' else board
+        return board
+    board = fold_board(board, folds[0])
+
+    print(int(np.sum(board)))
+
+
+def day13_part2():
+    coords, folds = [x.split('\n') for x in read_file('day13.txt').strip().split('\n\n')]
+    coords = np.array([[int(x) for x in coord.split(',')] for coord in coords])
+    orig_board_shape = tuple(np.array([1, 1]) + np.max(coords, axis=0))
+    folds = [[fold[fold.find('=')-1:fold.find('=')], int(fold[fold.find('=')+1:])] for fold in folds]
+
+    # create board
+    board = np.zeros(orig_board_shape)
+    # mark board
+    for coord in coords: board[coord[0], coord[1]] = 1
+
+    # transpose board so that it has same orientation as example
+    board = board.T
+
+    def fold_board(board, fold):
+        board = board.T if fold[0] == 'x' else board
+        upper, lower = board[:fold[1]], np.flipud(board[fold[1]+1:])
+        board = upper + lower
+        board[board > 1] = 1
+        board = board.T if fold[0] == 'x' else board
+        return board
+
+    # perform all folds
+    for fold in folds:
+        board = fold_board(board, fold)
+
+    # print output in readable way
+    for line in board:
+        line_readable = ' '.join(['#' if x == 1 else '.' for x in line])
+        print(line_readable)
+
+
 if __name__ == '__main__':
-    day12_part2()
+    day13_part2()
