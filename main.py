@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from collections import Counter
+import heapq
 
 
 def read_file(filename):
@@ -848,5 +849,80 @@ def day14_part2():
     print(max_count - min_count)
 
 
+def day15():
+    """
+        function dijkstra(G, S)
+        distance[V] <- infinite
+        previous[V] <- NULL
+        distance[S] <- 0
+        while there unvisited verticies:
+            add neighbors to current node to pq with dist to there
+
+        while Q IS NOT EMPTY
+            U <- Extract MIN from Q
+            for each unvisited neighbour V of U
+                tempDistance <- distance[U] + edge_weight(U, V)
+                if tempDistance < distance[V]
+                    distance[V] <- tempDistance
+                    previous[V] <- U
+        return distance[], previous[]
+    """
+    input = read_file('day15.txt')
+    graph = np.array([[int(x) for x in list(line)] for line in input.strip().split('\n')])
+    visited, distance, pqueue = np.zeros_like(graph), np.ones_like(graph)*np.inf, []
+    distance[0, 0], count, all_visited = 0, 0, np.sum(np.ones_like(visited))
+    n, m = graph.shape
+    heapq.heappush(pqueue, (0, count, np.array([0, 0])))
+    directions = np.array([[0, 1], [1, 0], [-1, 0], [0, -1]])
+    while np.sum(visited) < all_visited:
+        current_node = heapq.heappop(pqueue)
+        dist, _, coords = current_node
+        for direction in directions:
+            new_coords, count = coords + direction, count + 1
+            if -1 < new_coords[0] < n and -1 < new_coords[1] < m and visited[new_coords[0], new_coords[1]] == 0:
+                dist_to_new_coords = dist + graph[new_coords[0], new_coords[1]]
+                if dist_to_new_coords < distance[new_coords[0], new_coords[1]]:
+                    distance[new_coords[0], new_coords[1]] = dist_to_new_coords
+                    heapq.heappush(pqueue, (dist_to_new_coords, count, new_coords))
+        visited[coords[0], coords[1]] = 1
+
+    print(int(distance[-1, -1]))
+
+
+def day15():
+    input = read_file('day15.txt')
+    graph = np.array([[int(x) for x in list(line)] for line in input.strip().split('\n')])
+    one, new = np.ones_like(graph), np.copy(graph)
+    # create new bigger graph:
+    for i in range(4):
+        new += one
+        new[new > 9] = 1
+        graph = np.hstack((graph, new))
+
+    one, new = np.ones_like(graph), np.copy(graph)
+    for i in range(4):
+        new += one
+        new[new > 9] = 1
+        graph = np.vstack((graph, new))
+
+    visited, distance, pqueue = np.zeros_like(graph), np.ones_like(graph)*np.inf, []
+    distance[0, 0], count, all_visited = 0, 0, np.sum(np.ones_like(visited))
+    n, m = graph.shape
+    heapq.heappush(pqueue, (0, count, np.array([0, 0])))
+    directions = np.array([[0, 1], [1, 0], [-1, 0], [0, -1]])
+    while np.sum(visited) < all_visited:
+        current_node = heapq.heappop(pqueue)
+        dist, _, coords = current_node
+        for direction in directions:
+            new_coords, count = coords + direction, count + 1
+            if -1 < new_coords[0] < n and -1 < new_coords[1] < m and visited[new_coords[0], new_coords[1]] == 0:
+                dist_to_new_coords = dist + graph[new_coords[0], new_coords[1]]
+                if dist_to_new_coords < distance[new_coords[0], new_coords[1]]:
+                    distance[new_coords[0], new_coords[1]] = dist_to_new_coords
+                    heapq.heappush(pqueue, (dist_to_new_coords, count, new_coords))
+        visited[coords[0], coords[1]] = 1
+
+    print(int(distance[-1, -1]))
+
 if __name__ == '__main__':
-    day14_part2()
+    day15()
