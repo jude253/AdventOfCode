@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from collections import Counter
 
 
 def read_file(filename):
@@ -669,6 +670,7 @@ def day12():
                 for newpath in newpaths:
                     paths.append(newpath)
         return paths
+
     all_paths = find_all_paths(graph, 'start', 'end', tunnels_left)
     print(len(all_paths))
 
@@ -719,7 +721,7 @@ def day13():
     coords, folds = [x.split('\n') for x in read_file('day13.txt').strip().split('\n\n')]
     coords = np.array([[int(x) for x in coord.split(',')] for coord in coords])
     orig_board_shape = tuple(np.array([1, 1]) + np.max(coords, axis=0))
-    folds = [[fold[fold.find('=')-1:fold.find('=')], int(fold[fold.find('=')+1:])] for fold in folds]
+    folds = [[fold[fold.find('=') - 1:fold.find('=')], int(fold[fold.find('=') + 1:])] for fold in folds]
 
     # create board
     board = np.zeros(orig_board_shape)
@@ -733,11 +735,12 @@ def day13():
     def fold_board(board, fold):
         # if the fold is on "x=" transpose matrix, then transpose back at end
         board = board.T if fold[0] == 'x' else board
-        upper, lower = board[:fold[1]], np.flipud(board[fold[1]+1:])
+        upper, lower = board[:fold[1]], np.flipud(board[fold[1] + 1:])
         board = upper + lower
         board[board > 1] = 1
         board = board.T if fold[0] == 'x' else board
         return board
+
     board = fold_board(board, folds[0])
 
     print(int(np.sum(board)))
@@ -747,7 +750,7 @@ def day13_part2():
     coords, folds = [x.split('\n') for x in read_file('day13.txt').strip().split('\n\n')]
     coords = np.array([[int(x) for x in coord.split(',')] for coord in coords])
     orig_board_shape = tuple(np.array([1, 1]) + np.max(coords, axis=0))
-    folds = [[fold[fold.find('=')-1:fold.find('=')], int(fold[fold.find('=')+1:])] for fold in folds]
+    folds = [[fold[fold.find('=') - 1:fold.find('=')], int(fold[fold.find('=') + 1:])] for fold in folds]
 
     # create board
     board = np.zeros(orig_board_shape)
@@ -759,7 +762,7 @@ def day13_part2():
 
     def fold_board(board, fold):
         board = board.T if fold[0] == 'x' else board
-        upper, lower = board[:fold[1]], np.flipud(board[fold[1]+1:])
+        upper, lower = board[:fold[1]], np.flipud(board[fold[1] + 1:])
         board = upper + lower
         board[board > 1] = 1
         board = board.T if fold[0] == 'x' else board
@@ -775,5 +778,75 @@ def day13_part2():
         print(line_readable)
 
 
+def day14():
+    number_of_steps = 10
+    input = read_file('day14.txt')
+    polymer_template, pair_insertion_rules = [x.split('\n') for x in input.strip().split('\n\n')]
+    # set up conversion dictionary
+    conversion_dict = {k: k[0] + v + k[1] for (k, v) in [x.split(' -> ') for x in pair_insertion_rules]}
+
+    # iterate through pairs and replace with new insertion
+    polymer_template = polymer_template[0]
+    for step in range(number_of_steps):
+        converted_polymer_pairs = []
+        for i in range(len(polymer_template[:-1])):
+            pair = polymer_template[i:i + 2]
+            if pair in conversion_dict:
+                converted_polymer_pairs.append(conversion_dict[pair])
+            else:
+                converted_polymer_pairs.append(pair)
+        polymer_template = ''
+        for i, chain in enumerate(converted_polymer_pairs):
+            # if not last element:
+            if i != len(converted_polymer_pairs) - 1:
+                polymer_template += chain[:2]
+            else:
+                polymer_template += chain
+
+    letter_counts = Counter(polymer_template)
+    min_count, max_count = float('inf'), -float('inf')
+    for letter, count in letter_counts.items():
+        if count < min_count: min_count = count
+        if count > max_count: max_count = count
+
+    print(max_count - min_count)
+
+
+def day14_part2():
+    number_of_steps = 40
+    input = read_file('day14.txt')
+
+    polymer_template, pair_insertion_rules = [x.split('\n') for x in input.strip().split('\n\n')]
+    # set up conversion dictionary
+    conversion_dict = {k: [k[0] + v, v + k[1]] for (k, v) in [x.split(' -> ') for x in pair_insertion_rules]}
+    # iterate through pairs and replace with new insertion
+    polymer_template = polymer_template[0]
+
+    # set up pairs_counter
+    pairs_counter, new_pairs_counter = {k: 0 for k in conversion_dict.keys()}, {k: 0 for k in conversion_dict.keys()}
+    for i in range(len(polymer_template)-1): pairs_counter[polymer_template[i:i + 2]] += 1
+    for step in range(number_of_steps):
+        new_pairs_counter = {k: 0 for k in conversion_dict.keys()}
+        for pair, count in pairs_counter.items():
+            if count > 0:
+                new1, new2 = conversion_dict[pair]
+                new_pairs_counter[new1] += count
+                new_pairs_counter[new2] += count
+        pairs_counter = new_pairs_counter
+
+    letter_counts, max_count, min_count = {polymer_template[-1]:1}, -float('inf'), float('inf')
+    for pair, count in pairs_counter.items():
+        if pair[0] in letter_counts:
+            letter_counts[pair[0]] += count
+        else:
+            letter_counts[pair[0]] = count
+
+    min_count, max_count = float('inf'), -float('inf')
+    for letter, count in letter_counts.items():
+        if count < min_count: min_count = count
+        if count > max_count: max_count = count
+    print(max_count - min_count)
+
+
 if __name__ == '__main__':
-    day13_part2()
+    day14_part2()
