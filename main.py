@@ -1020,5 +1020,37 @@ def day16_part2():
     print(parse_s(0))
 
 
+def day17():
+    """
+    IDEA: search grid of start velocity values and find one with max y_pos
+    """
+    input = read_file('day17.txt').strip()
+    T = [[int(i) for i in r[2:].split('..')] for r in input.replace('target area: ', '').split(', ')]
+
+    def is_in_range(x_vel, y_vel):
+        """
+        - The probe's x position increases by its x velocity.
+        - The probe's y position increases by its y velocity.
+        - Due to drag, the probe's x velocity changes by 1 toward the value 0; that is, it decreases by 1 if it is greater than 0, increases by 1 if it is less than 0, or does not change if it is already 0.
+        - Due to gravity, the probe's y velocity decreases by 1.
+        """
+        x_pos, y_pos, max_y_pos = 0, 0, 0
+        while x_pos <= T[0][1] and y_pos >= T[1][0]:
+            x_pos += x_vel
+            y_pos += y_vel
+            if y_pos > max_y_pos:
+                max_y_pos = y_pos
+            x_vel = x_vel - x_vel//abs(x_vel) if x_vel != 0 else 0
+            y_vel -= 1
+            if T[0][0] <= x_pos <= T[0][1] and T[1][0] <= y_pos <= T[1][1]:
+                return max_y_pos
+        return -1
+
+    max_y_positions = np.array([[is_in_range(i, j) for j in range(-1000, 1000)] for i in range(1000)])
+    print(np.max(max_y_positions))  # max_y_pos
+    print(np.unravel_index(np.argmax(max_y_positions), max_y_positions.shape))  # initial velocity of max_y_pos shot
+    print(np.sum(max_y_positions >= 0))  # part 2: number of inital velocities that end in target hit
+
+
 if __name__ == '__main__':
-    day16_part2()
+    day17()
