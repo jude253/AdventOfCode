@@ -924,5 +924,101 @@ def day15():
 
     print(int(distance[-1, -1]))
 
+
+def day16():
+    """
+    This was thanks to a kind redditor u/ai_prof who is much smarter than me
+    """
+    convert = {'0': '0000', '1': '0001', '2': '0010', '3': '0011', '4': '0100', '5': '0101', '6': '0110', '7': '0111',
+               '8': '1000', '9': '1001', 'A': '1010', 'B': '1011', 'C': '1100', 'D': '1101', 'E': '1110', 'F': '1111'}
+
+    input = read_file('day16.txt').strip()
+
+    bits_string = ''.join([convert[x] for x in input])
+    len_bits_string = len(bits_string)
+
+
+
+    def parse_s(start_index):
+        i = start_index
+        if len_bits_string - i < 4:
+            return i, 0
+        total_version = int(bits_string[i:i+3], 2)
+        ID = int(bits_string[i+3:i+6], 2)
+        i += 6
+        if ID == 4:
+            while True:
+                i += 5
+                if bits_string[i-5] == '0':
+                    break
+        else:
+            len_or_num = bits_string[i:i+1]
+            if len_or_num == '0':
+                endi = i + 16 + int(bits_string[i+1:i+16], 2)
+                i += 16
+                while i < endi:
+                    i, v = parse_s(i)
+                    total_version += v
+            else:
+                count = int(bits_string[i+1:i+12], 2)
+                i += 12
+                for _ in range(count):
+                    i, v = parse_s(i)
+                    total_version += v
+        return i, total_version
+
+    print(parse_s(0)[1])
+
+
+def day16_part2():
+    """
+    This was thanks to a kind redditor u/ai_prof who is much smarter than me
+    """
+    convert = {'0': '0000', '1': '0001', '2': '0010', '3': '0011', '4': '0100', '5': '0101', '6': '0110', '7': '0111',
+               '8': '1000', '9': '1001', 'A': '1010', 'B': '1011', 'C': '1100', 'D': '1101', 'E': '1110', 'F': '1111'}
+    input = read_file('day16.txt').strip()
+
+    bits_string = ''.join([convert[x] for x in input])
+    len_bits_string = len(bits_string)
+    functions = [sum, np.prod, min, max, lambda l: l[0], lambda l: l[0] > l[1], lambda l: l[0] < l[1], lambda l: l[0] == l[1]]
+
+
+    def parse_s(start_index):
+        i = start_index
+        if len_bits_string - i < 4:
+            return i, 0
+        version = int(bits_string[i:i+3], 2)
+        ID = int(bits_string[i+3:i+6], 2)
+        vals = []
+        i += 6
+        # print(ID)
+        if ID == 4:
+            while True:
+                i += 5
+                vals.append(bits_string[i - 4:i])
+                # print(vals)
+                if bits_string[i-5] == '0':
+                    vals = [int(''.join(vals), 2)]
+                    # print(vals)
+                    break
+        else:
+            len_or_num = bits_string[i:i+1]
+            if len_or_num == '0':
+                endi = i + 16 + int(bits_string[i+1:i+16], 2)
+                i += 16
+                while i < endi:
+                    i, val = parse_s(i)
+                    vals.append(val)
+            else:
+                count = int(bits_string[i+1:i+12], 2)
+                i += 12
+                for _ in range(count):
+                    i, val = parse_s(i)
+                    vals.append(val)
+        return i, functions[ID](vals)
+
+    print(parse_s(0))
+
+
 if __name__ == '__main__':
-    day15()
+    day16_part2()
