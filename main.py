@@ -1,5 +1,5 @@
 from helper import read_file
-from daily_code import day6
+from daily_code import day1 as daily_challenge
 
 if __name__ == '__main__':
-    print(day6.part_2())
+    print(daily_challenge.part_2())
