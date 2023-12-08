@@ -3,8 +3,10 @@
 #include <stdio.h>
 #include <sstream>
 #include <iostream>
+#include <set>
 
 std::string CARD_LOOKUP_PART_1 = "0123456789TJQKA";
+std::string CARD_LOOKUP_PART_2 = "J23456789TQKA";
 
 std::vector<std::string> readfilelines( std::string filename ) {
     FILE *fptr;
@@ -46,11 +48,15 @@ public:
     int hand_type; // [0, 6] high card is 0, Five of a kind is 6
     int rank;
 
+    // part 2
+    Hand* original_hand; // pointer to original hand for hands in potential_hands
+    std::vector<Hand*> potential_other_hands; // original hand has potential other hands
+
 public:
-    void create_int_repr() {
+    void create_int_repr(std::string card_lookup) {
         for ( int j = 0; j < card_str.length(); j++ ) {
             char cur_char = card_str.at(j);
-            int index = CARD_LOOKUP_PART_1.find(cur_char);
+            int index = card_lookup.find(cur_char);
             // std::cout << cur_char << ", " << index << std::endl;
             int_repr.push_back(index);
         }
@@ -155,7 +161,7 @@ int part1() {
         hand->card_str = line.substr(0, space_index);
         hand->bid = std::stoi(line.substr(space_index+1, line.length()));
         hand->create_card_counts_map();
-        hand->create_int_repr();
+        hand->create_int_repr(CARD_LOOKUP_PART_1);
         hand->get_hand_type();
         hands.push_back(hand);
     }
@@ -181,8 +187,233 @@ int part1() {
     return 0;
 }
 
+Hand* create_hand(std::string card_str, int bid) {
+    Hand* hand = new Hand();
+    hand->card_str = card_str;
+    hand->bid = bid;
+    hand->create_card_counts_map();
+    hand->create_int_repr(CARD_LOOKUP_PART_2);
+    hand->get_hand_type();
+
+    return hand;
+}
+
+
+std::vector<int> find_J_indicies(std::string card_str) {
+    std::vector<int> J_indicies;
+
+    for ( int i = 0; i < card_str.size(); i++ ) {
+        char cur_char = card_str.at(i);
+        if (cur_char == 'J') {
+            J_indicies.push_back(i);
+        }
+    }
+
+    return J_indicies;
+}
+
+std::vector<std::vector<int>> comb(int N, int K)
+{
+    std::vector<std::vector<int>> out;
+    std::string bitmask(K, 1); // K leading 1's
+    bitmask.resize(N, 0); // N-K trailing 0's
+ 
+    // print integers and permute bitmask
+    do {
+        std::vector<int> line;
+        for (int i = 0; i < N+1; ++i) // [0..N-1] integers
+        {
+            if (bitmask[i]) {
+                // std::cout << " " << i;
+                line.push_back(i);
+            }
+        }
+        // std::cout << std::endl;
+        out.push_back(line);
+    } while (std::prev_permutation(bitmask.begin(), bitmask.end()));
+
+    return out;
+}
+
+std::set<std::string> get_all_permutations(int len) {
+
+    std::set<std::string> out;
+
+    for (auto i1: CARD_LOOKUP_PART_2) {
+        for (auto i2: CARD_LOOKUP_PART_2) {
+            for (auto i3: CARD_LOOKUP_PART_2) {
+                for (auto i4: CARD_LOOKUP_PART_2) {
+                    for (auto i5: CARD_LOOKUP_PART_2) {
+                        std::stringstream ss;
+                        ss << i1 << i2 << i3 << i4 << i5;
+                        out.insert(ss.str().substr(0, len));
+                    }
+                }
+            }
+        }
+    }
+
+    return out;
+}
+
+// gets inicies of j's, then list of all combinations of substitutions and
+// creates all potential card strings based on the substitutions
+std::vector<std::string> get_all_potential_card_strs(std::string card_str) {
+    std::vector<std::string> all_potential_card_strs;
+    // std::vector<std::vector<int>> combination_indices_list;
+    std::set<std::string> replacement_permutations;
+
+    std::vector<int> J_indicies = find_J_indicies(card_str);
+    // combination_indices_list = comb(CARD_LOOKUP_PART_2.length(), J_indicies.size());
+    replacement_permutations = get_all_permutations(J_indicies.size());
+    
+
+    for ( auto replacement_permutation : replacement_permutations ) {
+        std::string s_copy = card_str;
+        for ( int i = 0; i < J_indicies.size(); i++ ) {
+            int J_index = J_indicies[i];
+            char J_replacement_char = replacement_permutation.at(i);
+            s_copy.replace(J_index, 1, 1, J_replacement_char);
+        }
+        all_potential_card_strs.push_back(s_copy);
+    }
+
+    return all_potential_card_strs;
+}
+
+std::vector<Hand*> get_all_potential_hands(Hand* original_hand) {
+    std::vector<std::string> all_potential_card_strs;
+    std::vector<Hand*> potential_hands;
+
+    all_potential_card_strs = get_all_potential_card_strs(original_hand->card_str);
+
+    for ( auto potential_card_str : all_potential_card_strs ) {
+        Hand* potential_hand = create_hand(potential_card_str, original_hand->bid);
+
+        potential_hand->original_hand = original_hand; // add pointer to original hand
+        potential_hands.push_back(potential_hand);
+    }
+
+    return potential_hands;
+}
+
+
+// Try all hand options, take largest
+Hand* get_best_hand(std::string card_str, int bid) {
+    std::vector<Hand*> potential_hands;
+
+    for ( auto element : CARD_LOOKUP_PART_2 ) {
+        std::string s_copy = card_str;
+        std::replace(s_copy.begin(), s_copy.end(), 'J', element);
+        Hand* hand = create_hand(s_copy, bid);
+        potential_hands.push_back(hand);
+    }
+
+    std::stable_sort(potential_hands.begin(), potential_hands.end(), less_than_key());
+
+    return potential_hands.at(potential_hands.size()-1);
+}
+
+
+// compare potential_other_hands, return true if hand2 is largest of combined 
+// list of potential hands for hand2 and hand1 b/c this means that hand1 < hand2
+struct less_than_key_part_2 {
+    inline bool operator() (const Hand* hand1, const Hand* hand2) {
+        std::vector<Hand*> hand1_and_hand2_potential_hands;
+
+        for (auto hand1_potential_hands : hand1->potential_other_hands ) {
+            hand1_and_hand2_potential_hands.push_back(hand1_potential_hands);
+        }
+
+        for (auto hand2_potential_hands : hand2->potential_other_hands ) {
+            hand1_and_hand2_potential_hands.push_back(hand2_potential_hands);
+        }
+
+        std::stable_sort(
+            hand1_and_hand2_potential_hands.begin(), 
+            hand1_and_hand2_potential_hands.end(), 
+            less_than_key()
+        );
+
+        Hand* largest_hand = hand1_and_hand2_potential_hands.at(hand1_and_hand2_potential_hands.size()-1);
+        
+        return largest_hand->original_hand == hand2;
+    }
+};
+
+
+int part2() {
+    std::vector<std::string> input = readfilelines("day7");
+
+    std::vector<Hand*> hands;
+
+    // parse hands in to Hand, get needed traits of Hand for ranking
+    for ( int i = 0; i < input.size(); i++ ) {
+        std::vector<Hand*> potential_hands;
+
+        // std::cout << input[i] << std::endl;
+        std::string line = input[i];
+        int space_index = line.find(" ");
+
+        std::string card_str = line.substr(0, space_index);
+        int bid = std::stoi(line.substr(space_index+1, line.length()));
+
+        // create hand and add othe potential hands to it
+        Hand* hand = create_hand(card_str, bid);
+        hand->potential_other_hands = get_all_potential_hands(hand);
+        // Hand* hand = get_best_hand(card_str, bid);
+        hands.push_back(hand);
+    }
+
+    // sort hands by specified criteria
+    std::stable_sort(hands.begin(), hands.end(), less_than_key_part_2());
+
+    int total_winnings = 0;
+    // add rank attribute, print card and add to total winnings
+    for ( int i = 0; i < hands.size(); i++ ) {
+        Hand* hand = hands[i];
+        hand->rank = i+1;
+        // std::cout << "------------" << std::endl;
+        // hand->print();
+
+        total_winnings = total_winnings + (hand->rank * hand->bid);
+    }
+
+    std::cout << "------------" << std::endl;
+    std::cout << "------------" << std::endl;
+    std::cout << "total winnings: " << total_winnings << std::endl;
+    
+    // part 2 first wrong answer: 255589110
+    // part 2 second wrong answer: 255592308
+    // part 2 third wrong answer: 253724946
+    // part 2 fourth wrong answer: 255592308
+    
+    // not sure what I am doing wrong.  This is very frustrating.  Giving up.
+    return 0;
+}
+
+
 
 int main( int argc, char *argv[], char *envp[] ) {
-    part1();
+    part2();
+
+    // std::string card_str = "JJ";
+
+
+    // std::vector<std::string> all_potential_card_strs = get_all_potential_card_strs(card_str);
+
+    // for (auto potential_card_str : all_potential_card_strs) {
+    //     std::cout << potential_card_str << std::endl;
+    // }
+
+    // int len = 2;
+
+    // std::string card_str = "1234J";
+    // std::vector<std::string> list = get_all_potential_card_strs(card_str);
+
+    // // std::set<std::string> out = get_all_permutations(len);
+    // for (auto i : list) {
+    //     std::cout << i << std::endl;
+    // }
 
 }
