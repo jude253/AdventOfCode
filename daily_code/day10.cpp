@@ -134,6 +134,7 @@ class Map {
 public:
     std::vector<std::vector<char>> matrix;
     std::vector<std::vector<int>> distanceMatrix;
+    std::vector<std::vector<int>> interiorMatrix;
     std::vector<int> startIndicies;
     std::vector<MoveDirection*> startDirections;
 
@@ -160,6 +161,18 @@ public:
         distanceMatrix[indicies[0]][indicies[1]] = distance;
     }
 
+    int getInterior(std::vector<int> indicies) {
+        return interiorMatrix[indicies[0]][indicies[1]];
+    }
+
+    void setInterior(std::vector<int> indicies, int val) {
+        if ( !isValidIndicies(indicies) ) { return; }
+        int curValue = getInterior(indicies);
+        if ( curValue == 0 ) {
+            interiorMatrix[indicies[0]][indicies[1]] = val;
+        }
+    }
+
     void setMinDistance(std::vector<int> indicies, int distance) {
         int curValue = getDistance(indicies);
         if ( curValue == -1 || distance < curValue ) {
@@ -182,6 +195,22 @@ public:
             std::cout << std::endl;
         }
     }
+
+    void printInterior() {
+        std::cout << "startIndicies: { " << startIndicies[0] << ", " << startIndicies[1] << " }" << std::endl;
+        for ( auto mapLine : matrix ) {
+            for ( auto cur : mapLine ) {
+                std::cout << cur;
+            }
+            std::cout << std::endl;
+        }
+        for ( auto mapLine : interiorMatrix ) {
+            for ( auto cur : mapLine ) {
+                std::cout << cur;
+            }
+            std::cout << std::endl;
+        }
+    }
 };
 
 Map* createMap(std::vector<std::string> input) {
@@ -189,10 +218,12 @@ Map* createMap(std::vector<std::string> input) {
     for ( int i = 0; i < input.size(); i++ ) {
         std::vector<char> mapLine;
         std::vector<int> distanceMatrixLine;
+        std::vector<int> interiorMatrixLine;
         std::string line = input[i];
         for ( int j = 0; j < line.size(); j++ ) {
             char cur = line[j];
             mapLine.push_back(cur);
+            interiorMatrixLine.push_back(0);
             distanceMatrixLine.push_back(-1);
             if ( cur == 'S' ) {
                 map->startIndicies.push_back(i);
@@ -201,6 +232,7 @@ Map* createMap(std::vector<std::string> input) {
         }
         map->matrix.push_back(mapLine);
         map->distanceMatrix.push_back(distanceMatrixLine);
+        map->interiorMatrix.push_back(interiorMatrixLine);
     }
     return map;
 }
@@ -384,14 +416,173 @@ int part1() {
 }
 
 
-// int part2() {
-//     std::vector<std::string> input = readfilelines("day10");
+void iterateOverLoopPart2(Map* map, int startDirectionIdx) {
+    std::vector<int> startIndicies;
+    std::vector<int> currentIndicies;
+    std::vector<int> nextIndicies;
+    MoveDirection* currentDirection;
+    MoveDirection* prevDirection;
+    int distanceTraveled;
+    
+    startIndicies = map->startIndicies;
+    currentIndicies = startIndicies;
+    currentDirection = map->startDirections[startDirectionIdx];
 
-//     return 0;
-// }
+    // do initial iteration b/c there's no previous direciton to start.
+    map->setInterior(currentIndicies, 1);
+    nextIndicies = getNewIndicies(currentIndicies, currentDirection);
+
+    // move
+    currentIndicies = nextIndicies;
+    prevDirection = currentDirection;
+
+    while ( startIndicies != currentIndicies ) {
+        map->setInterior(currentIndicies, 1);
+        auto currentPipe = map->getPipeAt(currentIndicies);
+
+        currentDirection = currentPipe->getNextDirection(currentDirection);
+        
+        // get next location
+        nextIndicies = getNewIndicies(currentIndicies, currentDirection);
+
+
+        // move
+        currentIndicies = nextIndicies;
+        prevDirection = currentDirection;
+        distanceTraveled ++;
+
+    }
+}
+
+MoveDirection* getRightDirection(MoveDirection* currentDirection) {
+    if ( currentDirection == NORTH ) { return EAST; }
+    if ( currentDirection == EAST ) { return SOUTH; }
+    if ( currentDirection == SOUTH ) { return WEST; }
+    if ( currentDirection == WEST ) { return NORTH; }
+    return nullptr;
+}
+
+void iterateOverLoopPart2MarkSide(Map* map, int startDirectionIdx, int rightNumber) {
+    std::vector<int> startIndicies;
+    std::vector<int> currentIndicies;
+    std::vector<int> nextIndicies;
+    std::vector<int> rightIndicies;
+    MoveDirection* currentDirection;
+    MoveDirection* prevDirection;
+    MoveDirection* rightDirection;
+    int distanceTraveled;
+    
+    startIndicies = map->startIndicies;
+    currentIndicies = startIndicies;
+    currentDirection = map->startDirections[startDirectionIdx];
+    rightDirection = getRightDirection(currentDirection);
+    rightIndicies =  getNewIndicies(currentIndicies, rightDirection);
+    // do initial iteration b/c there's no previous direciton to start.
+    map->setInterior(rightIndicies, rightNumber);
+    nextIndicies = getNewIndicies(currentIndicies, currentDirection);
+
+    // move
+    currentIndicies = nextIndicies;
+    prevDirection = currentDirection;
+
+    while ( startIndicies != currentIndicies ) {
+        auto currentPipe = map->getPipeAt(currentIndicies);
+    
+        currentDirection = currentPipe->getNextDirection(currentDirection);
+
+        rightDirection = getRightDirection(currentDirection);
+        rightIndicies =  getNewIndicies(currentIndicies, rightDirection);
+        map->setInterior(rightIndicies, rightNumber);
+        
+        // get next location
+        nextIndicies = getNewIndicies(currentIndicies, currentDirection);
+
+
+        // move
+        currentIndicies = nextIndicies;
+        prevDirection = currentDirection;
+        distanceTraveled ++;
+
+    }
+}
+
+std::vector<MoveDirection*> directions = { NORTH, EAST, SOUTH, WEST }; 
+
+int part2() {
+    /*
+    Approach, traverse loop in one direction, and mark all non pipe spots to the
+    left as something.  Then traverse graph and expand out in all directions for
+    every marked spot from intial traversal.  Count up these spots.
+
+    It's not working despite test cases working. I am not going to figure out
+    what the problem is with this code.  There must be some annoying edge case.
+
+    Approach was to run this code 2x with different staring directions b/c I 
+    don't for which starting direction "right" will be the interior, and likely
+    it's not worth spending time on that code b/c there's going to be some
+    strange edge case that is extremely difficult to debug anyway.  It's better
+    not to spend time getting that part of the code figure out.  What I should
+    have done in retrospect was just use a DFS or BFS approach instead of this
+    weird like looking at what direcion we went into the pipe to know the next
+    direction.  Idk why I got so specifically tied to that.  Really all that's
+    needed is the next new direction.  Oh well.  Live and learn.  Or maybe more
+    live, learn, and then forget and then relearn and repeat lol.
+    */
+    std::vector<std::string> input = readfilelines("day10");
+    Map* map = createMap(input);
+    // map->print();
+    setUpPIPES();
+    setStartDirections(map);
+    
+    iterateOverLoopPart2(map, 0);
+    int rightVal = 2;
+    int startDirection = 0;
+    // iterateOverLoopPart2MarkSide(map, 1, 2); 
+    iterateOverLoopPart2MarkSide(map, startDirection, rightVal);
+    
+    // map->printInterior();
+
+
+    std::vector<std::vector<int>> toVisit;
+    for (int i = 0; i < map->interiorMatrix.size(); i++ ) {
+        for (int j = 0; j < map->interiorMatrix[0].size(); j++ ) {
+            int curVal = map->interiorMatrix[i][j];
+            if (curVal == rightVal) { toVisit.push_back( { i, j } ); }
+        }
+    }
+
+    while ( toVisit.size() > 0 ) {
+        std::vector<int> cur = toVisit[toVisit.size()-1];
+        toVisit.pop_back();
+        // printIndicies(cur);
+        map->setInterior(cur, rightVal);
+        for ( auto direction : directions ) {
+            auto newIndicies = getNewIndicies(cur, direction);
+            if (map->isValidIndicies(newIndicies) && map->getInterior(newIndicies) == 0) {
+                toVisit.push_back(newIndicies);
+            }
+        }
+    }
+
+    // map->printInterior();
+
+
+    int total = 0;
+    for (int i = 0; i < map->interiorMatrix.size(); i++ ) {
+        for (int j = 0; j < map->interiorMatrix[0].size(); j++ ) {
+            int curVal = map->interiorMatrix[i][j];
+            if (curVal == rightVal) { total++; }
+        }
+    }
+
+    std::cout << "total: " << total << std::endl;
+
+    return 0;
+}
 
 
 int main( int argc, char *argv[], char *envp[] ) {
-    part1();
-    // part2(); // def not trying part 2. I don't have enough time.  This is way too tricky for me.
+    // part1();
+    part2(); // Gave it a shot. It's not working, 
+    // but my code is too messed up to figure out what the issue is in any sort of sane amount of time
 }
