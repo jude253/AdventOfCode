@@ -29,6 +29,7 @@ class Day_06(Solution):
     I went for speed on this one, so I didn't try to make the code
     pretty or readible.
     """
+
     def part_one(self):
         graph = [list(s) for s in self.input_file.split("\n")]
         num_rows = len(graph)
