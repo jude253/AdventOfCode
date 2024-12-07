@@ -1,11 +1,7 @@
 import heapq
-import logging
 from collections import Counter, defaultdict
 
 from advent_of_code.utils.daily_code_utils import Solution
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 def parse_input(input_file_str):
@@ -43,5 +39,5 @@ class Day_01(Solution):
 
 if __name__ == "__main__":
     solution = Day_01()
-    logger.info(f"Part 1: {solution.part_one()}")
-    logger.info(f"Part 2: {solution.part_two()}")
+    solution.execute_part_one()
+    solution.execute_part_two()

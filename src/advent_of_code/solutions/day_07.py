@@ -1,10 +1,4 @@
-import logging
-
 from advent_of_code.utils.daily_code_utils import Solution
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
-
 
 OPERATORS = ["||", "*", "+"]
 
@@ -70,5 +64,5 @@ class Day_07(Solution):
 
 if __name__ == "__main__":
     solution = Day_07()
-    logger.info(f"Part 1: {solution.part_one()}")
-    logger.info(f"Part 2: {solution.part_two()}")
+    solution.execute_part_one()
+    solution.execute_part_two()

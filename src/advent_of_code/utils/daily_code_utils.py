@@ -1,5 +1,6 @@
 import logging
 import sys
+import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from importlib.resources import as_file, files
@@ -7,7 +8,6 @@ from pathlib import Path
 
 from advent_of_code import input
 
-logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
@@ -42,11 +42,14 @@ class DailyInput:
 @dataclass
 class Solution(ABC):
     __daily_input: DailyInput
+    current_day_name: str
     input_file: str
 
     def __init__(self):
         self.__daily_input = DailyInput()
-        logger.info(f"Input loaded for '{self.__daily_input.current_day_name}'!")
+        self.current_day_name = self.__daily_input.current_day_name
+        self.logger = logging.getLogger(self.current_day_name)
+        self.logger.info(f"Input loaded for '{self.current_day_name}'!")
         self.input_file = self.__daily_input.input_file
 
     @abstractmethod
@@ -58,3 +61,31 @@ class Solution(ABC):
     def part_two(self):
         """Implement this as part of the challenge"""
         pass
+
+    def __print_title(self, title):
+        print()
+        print("-" * 80)
+        print(f"{title:-^80}")
+        print("-" * 80)
+        print()
+
+    def execute_part_one(self):
+        title = f" {self.current_day_name} - part one "
+        self.__print_title(f" START: {title}")
+
+        start = time.time()
+        part_one_solution = self.part_one()
+        end = time.time()
+        self.logger.info(f"Part 1: {part_one_solution} ({end-start} s)")
+        self.__print_title(f"-- END: {title}")
+
+    def execute_part_two(self):
+        title = f" {self.current_day_name} - part two "
+        self.__print_title(f" START: {title}")
+
+        start = time.time()
+        part_two_solution = self.part_two()
+        end = time.time()
+        self.logger.info(f"Part 2: {part_two_solution} ({end-start} s)")
+
+        self.__print_title(f"-- END: {title}")

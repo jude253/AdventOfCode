@@ -1,9 +1,4 @@
-import logging
-
 from advent_of_code.utils.daily_code_utils import Solution
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 XMAS_LEN = 4
 XMAS = "XMAS"
@@ -95,5 +90,5 @@ class Day_04(Solution):
 
 if __name__ == "__main__":
     solution = Day_04()
-    logger.info(f"Part 1: {solution.part_one()}")
-    logger.info(f"Part 2: {solution.part_two()}")
+    solution.execute_part_one()
+    solution.execute_part_two()
