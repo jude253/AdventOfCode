@@ -11,6 +11,21 @@ from advent_of_code import input
 logging.basicConfig(level=logging.INFO)
 
 
+class TText:
+    BLUE = "\033[94m"
+    CYAN = "\033[96m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    RED = "\033[91m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+    END = "\033[0m"
+
+    @classmethod
+    def bold_and_green(cls, s):
+        return TText.GREEN + TText.BOLD + str(s) + TText.END + TText.END
+
+
 @dataclass
 class DailyInput:
     """
@@ -64,10 +79,18 @@ class Solution(ABC):
 
     def __print_title(self, title):
         print()
-        print("-" * 80)
-        print(f"{title:-^80}")
-        print("-" * 80)
+        print(TText.bold_and_green("-" * 80))
+        print(TText.bold_and_green(f"{title:-^80}"))
+        print(TText.bold_and_green("-" * 80))
         print()
+
+    def __format_answer(self, answer, seconds_to_run):
+        return (
+            f"{TText.YELLOW + TText.BOLD}"
+            f"{answer}"
+            f"{TText.END + TText.END} "
+            f"({TText.CYAN}{seconds_to_run} sec{TText.END})"
+        )
 
     def execute_part_one(self):
         title = f" {self.current_day_name} - part one "
@@ -76,7 +99,10 @@ class Solution(ABC):
         start = time.time()
         part_one_solution = self.part_one()
         end = time.time()
-        self.logger.info(f"Part 1: {part_one_solution} ({end-start} s)")
+        seconds_to_run = end - start
+        self.logger.info(
+            f"Part 1: {self.__format_answer(part_one_solution, seconds_to_run)}"
+        )
         self.__print_title(f"-- END: {title}")
 
     def execute_part_two(self):
@@ -86,6 +112,9 @@ class Solution(ABC):
         start = time.time()
         part_two_solution = self.part_two()
         end = time.time()
-        self.logger.info(f"Part 2: {part_two_solution} ({end-start} s)")
+        seconds_to_run = end - start
+        self.logger.info(
+            f"Part 2: {self.__format_answer(part_two_solution, seconds_to_run)}"
+        )
 
         self.__print_title(f"-- END: {title}")
