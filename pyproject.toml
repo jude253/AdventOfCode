@@ -24,7 +24,9 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = []
+dependencies = [
+  "pygame~=2.6.0",  # for visualizations
+]
 
 [project.urls]
 Documentation = "https://github.com/jude253/AdventOfCode#readme"

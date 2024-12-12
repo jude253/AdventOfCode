@@ -25,22 +25,29 @@ def blink(stones_map):
     return new_stones_map
 
 
+def parse_input(input_file_str):
+    stones_map = defaultdict(int)
+    for stone in input_file_str.split():
+        stones_map[int(stone)] += 1
+    return stones_map
+
+
+def get_stone_count(stones_map):
+    return sum(list(stones_map.values()))
+
+
 class Day_11(Solution):
     def part_one(self):
-        stones_map = defaultdict(int)
-        for stone in self.input_file.split():
-            stones_map[int(stone)] += 1
+        stones_map = parse_input(self.input_file)
         for _ in range(25):
             stones_map = blink(stones_map)
-        return sum(list(stones_map.values()))
+        return get_stone_count(stones_map)
 
     def part_two(self):
-        stones_map = defaultdict(int)
-        for stone in self.input_file.split():
-            stones_map[int(stone)] += 1
+        stones_map = parse_input(self.input_file)
         for _ in range(75):
             stones_map = blink(stones_map)
-        return sum(list(stones_map.values()))
+        return get_stone_count(stones_map)
 
 
 if __name__ == "__main__":
