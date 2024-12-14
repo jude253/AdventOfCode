@@ -1,3 +1,5 @@
+import numpy as np
+
 from advent_of_code.utils.daily_code_utils import Solution
 
 
@@ -58,6 +60,33 @@ def solve_system(A, B, P):
     return x, y
 
 
+def solve_system_numpy_fail_1(A, B, P):
+    left, right = np.array([A, B]).T, np.array(P)
+    X = np.linalg.solve(left, right)
+    X_r = X.round()
+    if np.isclose(X, X_r, 0.0000000000000001).all():
+        return X_r[0], X_r[1]
+    return 0, 0
+
+
+def solve_system_numpy_fail_2(A, B, P):
+    left, right = np.array([A, B]).T, np.array(P)
+    X = np.linalg.solve(left, right)
+    X_r = X.round()
+    if np.isclose(X, X_r, 0.001).all():
+        return X_r[0], X_r[1]
+    return 0, 0
+
+
+def solve_system_numpy_succeed(A, B, P):
+    left, right = np.array([A, B]).T, np.array(P)
+    X = np.linalg.solve(left, right)
+    X_r = X.round()
+    if np.isclose(np.dot(left, X_r), right, 0.0000000000000001).all():
+        return X_r[0], X_r[1]
+    return 0, 0
+
+
 class Day_13(Solution):
     def part_one(self):
         games = parse_input(self.input_file)
@@ -78,7 +107,10 @@ class Day_13(Solution):
         for game in games:
             prize, A, B = game["Prize"], game["A"], game["B"]
             prize = add(prize, (10000000000000, 10000000000000))
-            x, y = solve_system(A, B, prize)
+            # x, y = solve_system(A, B, prize)  # ans: 105620095782547
+            # x, y = solve_system_numpy_fail_1(A, B, prize)  # ans: 56866143975193
+            # x, y = solve_system_numpy_fail_2(A, B, prize)  # ans: 165389116105961
+            x, y = solve_system_numpy_succeed(A, B, prize)  # ans: 105620095782547
             if x == int(x) and y == int(y):
                 min_cost += x * 3 + y
 

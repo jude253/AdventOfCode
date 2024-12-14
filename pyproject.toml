@@ -26,6 +26,7 @@ classifiers = [
 ]
 dependencies = [
   "pygame~=2.6.0",  # for visualizations
+  "numpy~=2.2.0",
 ]
 
 [project.urls]
