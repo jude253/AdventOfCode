@@ -1,11 +1,10 @@
-
 import pygame
 
 from advent_of_code.solutions import day_14
 from advent_of_code.utils.daily_code_utils import DailyInput
 from advent_of_code.utils.grid import Grid
 
-TARGET_FPS = .5
+TARGET_FPS = 0.5
 daily_input = DailyInput()
 robots = day_14.parse_input(daily_input.input_file)
 HEIGHT, WIDTH = 103, 101
