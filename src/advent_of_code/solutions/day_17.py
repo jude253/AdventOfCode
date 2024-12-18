@@ -50,27 +50,30 @@ def combo_operand_lookup(register, literal_operand):
     return d[literal_operand]
 
 
+def parse_input(input_file_str):
+    register = {}
+    program = []
+
+    for line in input_file_str.splitlines():
+        if line.startswith("Register A: "):
+            register["A"] = int(line.split("Register A: ")[1])
+        if line.startswith("Register B: "):
+            register["B"] = int(line.split("Register B: ")[1])
+        if line.startswith("Register C: "):
+            register["C"] = int(line.split("Register C: ")[1])
+        if line.startswith("Program: "):
+            tmp = line.split("Program: ")[1]
+            program = [int(num) for num in tmp.split(",")]
+    return register, program
+
+
 class Day_17(Solution):
     def part_one(self):
-        register = {}
-        program = []
-
+        register, program = parse_input(self.input_file)
         output = []
-
-        for line in self.input_file.splitlines():
-            if line.startswith("Register A: "):
-                register["A"] = int(line.split("Register A: ")[1])
-            if line.startswith("Register B: "):
-                register["B"] = int(line.split("Register B: ")[1])
-            if line.startswith("Register C: "):
-                register["C"] = int(line.split("Register C: ")[1])
-            if line.startswith("Program: "):
-                tmp = line.split("Program: ")[1]
-                program = [int(num) for num in tmp.split(",")]
 
         num_instructions = len(program)
         instruction_pointer = 0
-
         while instruction_pointer < num_instructions:
             instruction_val = program[instruction_pointer]
             literal_operand = program[instruction_pointer + 1]
@@ -99,19 +102,7 @@ class Day_17(Solution):
         return ",".join([str(num) for num in output])
 
     def part_two(self):
-        register = {}
-        program = []
-
-        for line in self.input_file.splitlines():
-            if line.startswith("Register A: "):
-                register["A"] = int(line.split("Register A: ")[1])
-            if line.startswith("Register B: "):
-                register["B"] = int(line.split("Register B: ")[1])
-            if line.startswith("Register C: "):
-                register["C"] = int(line.split("Register C: ")[1])
-            if line.startswith("Program: "):
-                tmp = line.split("Program: ")[1]
-                program = [int(num) for num in tmp.split(",")]
+        register, program = parse_input(self.input_file)
 
         def execute_program(register, program):
             output = []
