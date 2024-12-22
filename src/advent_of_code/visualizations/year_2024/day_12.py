@@ -2,7 +2,7 @@ from random import randint
 
 import pygame
 
-from advent_of_code.solutions import day_12
+from advent_of_code.solutions.year_2024 import day_12
 from advent_of_code.utils.daily_code_utils import DailyInput
 
 TARGET_FPS = 60

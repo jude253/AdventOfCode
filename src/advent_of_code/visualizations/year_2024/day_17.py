@@ -1,7 +1,7 @@
 # Example file showing a circle moving on screen
 import pygame
 
-from advent_of_code.solutions import day_17
+from advent_of_code.solutions.year_2024 import day_17
 from advent_of_code.utils.daily_code_utils import DailyInput
 
 TARGET_FPS = 10

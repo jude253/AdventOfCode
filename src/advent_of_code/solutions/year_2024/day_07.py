@@ -13,7 +13,7 @@ class Day_07(Solution):
             answer_list.append(int(s[0]))
             operands_list.append([int(x) for x in s[1].split()])
         total_sum = 0
-        for answer, operands in zip(answer_list, operands_list):
+        for answer, operands in zip(answer_list, operands_list, strict=False):
             stack = [(0, operands[0])]
             while stack:
                 cur_index, cur_total = stack.pop()
@@ -39,7 +39,7 @@ class Day_07(Solution):
             answer_list.append(int(s[0]))
             operands_list.append([int(x) for x in s[1].split()])
         total_sum = 0
-        for answer, operands in zip(answer_list, operands_list):
+        for answer, operands in zip(answer_list, operands_list, strict=False):
             stack = [(0, operands[0])]
             while stack:
                 cur_index, cur_total = stack.pop()

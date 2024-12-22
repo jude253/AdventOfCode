@@ -13,7 +13,7 @@ Substitute the file path of the daily challenge you want to run in the
 below command:
 
 ```
-hatch run python src/advent_of_code/solutions/day_00.py
+hatch run python src/advent_of_code/solutions/year_2024/day_00.py
 ```
 
 ## How to run linting/type checking

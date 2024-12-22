@@ -165,4 +165,5 @@ cython_debug/
 # vscode
 vscode/
 
-**/input/
+**/input/year_*/**
+!**/input/year_*/*.py

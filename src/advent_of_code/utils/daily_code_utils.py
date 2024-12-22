@@ -38,13 +38,16 @@ class DailyInput:
     input_file: str
 
     def __init__(self):
-        self.current_day_name = Path(sys.argv[0]).stem
+        file_name_path = Path(sys.argv[0])
+        self.current_day_name = file_name_path.stem
+        self.current_year_name = file_name_path.parent.stem
         self.__get_input_for_current_day()
 
     def __get_input_for_current_day(self):
         input_dir_files = files(input)
         with as_file(input_dir_files) as input_dir:
-            cur_day_file_path = input_dir.joinpath(self.current_day_name)
+            cur_day_file_path = input_dir.joinpath(self.current_year_name)
+            cur_day_file_path = cur_day_file_path.joinpath(self.current_day_name)
             if not cur_day_file_path.exists():
                 raise FileNotFoundError(
                     f"'{cur_day_file_path}' not found."
