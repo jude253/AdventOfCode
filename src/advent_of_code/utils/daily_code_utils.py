@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 import time
 from abc import ABC, abstractmethod
@@ -37,8 +38,8 @@ class DailyInput:
     current_day_name: str
     input_file: str
 
-    def __init__(self):
-        file_name_path = Path(sys.argv[0])
+    def __init__(self, daily_solution_file_name_path=Path(sys.argv[0])):
+        file_name_path = daily_solution_file_name_path
         self.current_day_name = file_name_path.stem
         self.current_year_name = file_name_path.parent.stem
         self.__get_input_for_current_day()
@@ -64,7 +65,11 @@ class Solution(ABC):
     input_file: str
 
     def __init__(self):
-        self.__daily_input = DailyInput()
+        self.__daily_input = DailyInput(
+            daily_solution_file_name_path=Path(
+                os.environ.get("__PY_DAILY_SOLUTION_FILE_PATH", sys.argv[0])
+            )
+        )
         self.current_day_name = self.__daily_input.current_day_name
         self.logger = logging.getLogger(self.current_day_name)
         self.logger.info(f"Input loaded for '{self.current_day_name}'!")
