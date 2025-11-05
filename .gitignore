@@ -165,9 +165,17 @@ cython_debug/
 # vscode
 vscode/
 
-**/input/year_*/**
-!**/input/year_*/*.py
 
+.venv*
+*venv*
+
+input/*/*
+!input/*/.gitkeep
+
+.*_cache
+
+build/
+dist/
 
 #########
 # Bazel #

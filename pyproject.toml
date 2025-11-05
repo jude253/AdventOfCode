@@ -7,7 +7,7 @@ name = "advent-of-code"
 dynamic = ["version"]
 description = 'Repository for Advent of Code challenges.'
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 license = "MIT"
 keywords = []
 authors = [
@@ -16,14 +16,17 @@ authors = [
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
+  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-  "pygame~=2.6.0",  # for visualizations
-  "rich~=13.9.4",  # for visualizations
-  "numpy~=2.2.0",
+  "rich~=14.2.0",
+  "numpy~=2.3.4",
+  "pandas~=2.3.3",
 ]
 
 [project.urls]
@@ -34,24 +37,37 @@ Source = "https://github.com/jude253/AdventOfCode"
 [tool.hatch.version]
 path = "src/advent_of_code/__about__.py"
 
-[tool.hatch.envs.build-tool]
+[tool.hatch.envs.default]
+path = ".venv"
+python = "pypy"
 extra-dependencies = [
-  "mypy>=1.0.0",
-  "ruff~=0.8.1",
+  "mypy==1.18.2",
+  "ruff==0.14.3",
+  "pygame-ce~=2.5.6",
 ]
-[tool.hatch.envs.build-tool.scripts]
+
+[tool.hatch.envs.default.scripts]
+sync-venv = [
+  "python -V"
+]
+
 format = [
-  "ruff format {args:src/advent_of_code tests}",
-  "ruff check {args:src/advent_of_code tests} --fix",
+  "ruff format {args:src/advent_of_code tests bin}",
+  "ruff check {args:src/advent_of_code tests bin} --fix",
 ]
-lint = "ruff check {args:src/advent_of_code tests}"
-types = "mypy --install-types --non-interactive {args:src/advent_of_code tests}"
+
+lint = "ruff check {args:src/advent_of_code tests bin}"
+types = "mypy --install-types --non-interactive {args:src/advent_of_code tests bin}"
 check = [
   "format",
   "lint",
   "types",
 ]
 
+# `hatch run clean`
+clean = [
+  "rm -rf dist build .venv* .*_cache **/*__pycache__",
+]
 
 [tool.ruff.lint]
 select = [
@@ -68,6 +84,7 @@ select = [
     # isort
     "I",
 ]
+
 
 [tool.coverage.run]
 source_pkgs = ["advent_of_code", "tests"]
