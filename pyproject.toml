@@ -39,7 +39,7 @@ path = "src/advent_of_code/__about__.py"
 
 [tool.hatch.envs.default]
 path = ".venv"
-python = "pypy"
+python = "pypy3.11"
 extra-dependencies = [
   "mypy==1.18.2",
   "ruff==0.14.3",
