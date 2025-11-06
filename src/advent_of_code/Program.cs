@@ -30,6 +30,9 @@ switch (int.Parse(args[0]))
     case 3:
         Day03.Run();
         break;
+    case 4:
+        Day04.Run();
+        break;
     default:
         Console.WriteLine($"Day {args[0]} not yet implemented");
         break;
