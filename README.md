@@ -3,3 +3,17 @@
 This repo holds code for Advent of Code 2022: https://adventofcode.com/2022
 
 It is primarily made with Python in mind with hatch, but that being said, in theory any coding langauage could be put in a folder and run.
+
+# Run Commands
+
+## Python
+
+```
+hatch run python path/to/file.py
+```
+
+## C#
+
+```
+dotnet run -- <dayNumber>
+```
