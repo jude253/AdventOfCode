@@ -2,8 +2,6 @@ from rich.console import Console
 
 console = Console()
 
-DIAL_START = 50
-
 
 def get_input_file_contents(file_path="input/day_02/input.txt"):
     input_file_contents = None
@@ -29,7 +27,7 @@ def part_one():
     for invalid_id_range in invalid_id_ranges:
         start, end = invalid_id_range
         for invalid_id in range(start, end + 1):
-            if part_two_invalid_id(invalid_id):
+            if part_one_invalid_id(invalid_id):
                 invalid_id_sum += invalid_id
 
     console.log(invalid_id_sum)
@@ -52,6 +50,29 @@ def part_two_invalid_id(id: int) -> bool:
     return False
 
 
+def part_two_invalid_id_readible(id: int) -> bool:
+    str_id = str(id)
+    # Check every possible sequence length from 1 up to half the string length.
+    # A valid repeating pattern must divide the total length and repeat at least twice.
+    str_len = len(str_id)
+    for compare_str_len in range(1, str_len):
+        if str_len % compare_str_len == 0:
+            substr_set = set()
+            for substr_start_index in range(0, str_len, compare_str_len):
+                substr_end_index = substr_start_index + compare_str_len
+                substr = str_id[substr_start_index:substr_end_index]
+                substr_set.add(substr)
+
+                # Speed up by exiting early if already not repeating.
+                if len(substr_set) > 1:
+                    break
+
+            # Ensure all substrs are the same b/c set size is exactly 1.
+            if len(substr_set) == 1:
+                return True
+    return False
+
+
 def part_two():
     console.log("part_two")
     input_file_contents = get_input_file_contents("input/day_02/input.txt")
@@ -63,7 +84,7 @@ def part_two():
     for invalid_id_range in invalid_id_ranges:
         start, end = invalid_id_range
         for invalid_id in range(start, end + 1):
-            if part_two_invalid_id(invalid_id):
+            if part_two_invalid_id_readible(invalid_id):
                 invalid_id_sum += invalid_id
 
     console.log(invalid_id_sum)
