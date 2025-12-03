@@ -237,3 +237,5 @@ MODULE.bazel.lock
 
 # Micrsoft solution file.
 *.sln
+
+.vscode

@@ -53,12 +53,14 @@ def part_two():
     total = 0
     for i, bank in enumerate(banks):
         console.log(i)
-        total += get_max_int(bank)
+        total += get_max_int_greedy_2(bank)
     console.log(total)
 
 
-def get_max_int_greedy(digits: str, keep: int) -> int:
+def get_max_int_greedy(digits: str, keep: int = 12) -> int:
     """
+    **From ChatGPT:**
+
     Find the maximum number possible by selecting exactly 'keep' digits
     from the input string while maintaining their relative order.
 
@@ -128,12 +130,53 @@ def get_max_int_greedy(digits: str, keep: int) -> int:
     return int("".join(result))
 
 
-def get_max_int(input_str: str, n=15):
+def get_max_int_greedy_2(digits: str, keep: int = 12) -> int:
+    """
+    Get the largest number in the range of next numbers that will allow
+    still filling all slots.
+    """
+
+    digits: list[int] = [int(x) for x in digits]
+
+    len_digits = len(digits)
+
+    max_greed_int_output = []
+
+    current_window_start_index = 0
+    current_window_end_index = 0  # Set in loop-- here for clarity.
+
+    while len(max_greed_int_output) < keep:
+        # Current window end index is the end of the range of the length
+        # of digits minus the current number of digits need to fill
+        # max_greed_int_output (+1 b/c not inclusive)
+        current_window_end_index = len_digits - (keep - len(max_greed_int_output)) + 1
+        current_window = digits[current_window_start_index:current_window_end_index]
+
+        # Get max in current window
+        current_window_max = max(current_window)
+
+        # Get index of max in current window in reference to whole digit list
+        current_window_max_index = digits.index(
+            value=current_window_max,
+            start=current_window_start_index,
+            stop=current_window_end_index,
+        )
+
+        # Add max to max_greed_int_output
+        max_greed_int_output.append(current_window_max)
+
+        # Set next current_window_start_index to the index after current
+        # max in digits list.
+        current_window_start_index = current_window_max_index + 1
+
+    return int("".join([str(x) for x in max_greed_int_output]))
+
+
+def get_max_int(input_str: str):
     """Use greedy algorithm to find max by keeping 12 digits"""
-    return get_max_int_greedy(input_str, 12)
+    return get_max_int_greedy(input_str)
 
 
 if __name__ == "__main__":
-    # Test with test.txt first
     part_one()
     part_two()
