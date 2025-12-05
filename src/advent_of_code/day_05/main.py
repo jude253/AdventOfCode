@@ -62,6 +62,8 @@ def part_two(input_file_contents: str):
             range_ids = tuple(sorted([int(x) for x in range_ids]))
             to_consolidate_id_range_stack.append(range_ids)
 
+    to_consolidate_id_range_stack.sort()
+
     consolidated_id_range_set: set[tuple[int, int]] = set()
 
     while len(to_consolidate_id_range_stack) > 0:
