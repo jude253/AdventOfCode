@@ -1,5 +1,6 @@
 from collections import defaultdict, deque
 
+import pulp
 from rich.console import Console
 
 console = Console()
@@ -131,9 +132,95 @@ def part_one(input_file_contents: str):
     console.log(min_flip_switches_total)
 
 
+def solve_row_part_two(
+    start_state: str,
+    target_state: str,
+    wiring_schematics_list: list[list[int]],
+    target_joltage: list[int],
+):
+    # console.log(wiring_schematics_list, target_joltage)
+
+    num_switches = len(wiring_schematics_list)
+    num_positions = len(target_joltage)
+
+    # Create the linear programming problem
+    # Minimize sum(X) where X are the number of times each switch group is activated
+    problem = pulp.LpProblem("MinimizeSwitchActivations", pulp.LpMinimize)
+
+    # Create decision variables (non-negative integers)
+    X = [
+        pulp.LpVariable(f"x_{i}", lowBound=0, cat=pulp.LpInteger)
+        for i in range(num_switches)
+    ]
+
+    # Objective: minimize sum of all X values
+    problem += pulp.lpSum(X), "TotalActivations"
+
+    # Constraints: for each position, sum of activations must equal target joltage
+    for pos in range(num_positions):
+        constraint_sum = pulp.lpSum(
+            X[i] for i, switches in enumerate(wiring_schematics_list) if pos in switches
+        )
+        problem += constraint_sum == target_joltage[pos], f"Position_{pos}_Constraint"
+
+    # Solve the problem
+    problem.solve(pulp.PULP_CBC_CMD(msg=0))
+
+    # Extract solution
+    solution = [int(var.varValue) for var in X]
+
+    # console.log("Solution X:", solution)
+    # console.log("Sum of X:", sum(solution))
+
+    # Verify solution
+    verification = [0] * num_positions
+    for i, switches in enumerate(wiring_schematics_list):
+        for switch in switches:
+            verification[switch] += solution[i]
+
+    # console.log("Verification:", verification)
+    # console.log("Should equal target_joltage:", target_joltage)
+    # console.log("Status:", pulp.LpStatus[problem.status])
+
+    return sum(solution)
+
+
 def part_two(input_file_contents: str):
     console.log("part_two")
     input_file_contents = input_file_contents.splitlines()
+    input_file_contents = [line.split() for line in input_file_contents]
+    initialization_info_list = []
+    for line in input_file_contents:
+        target_state, wiring_schematics, target_joltage = (
+            line[0],
+            line[1:-1],
+            line[-1],
+        )
+        target_state = target_state.strip("[]")
+        start_state = "." * len(target_state)
+        wiring_schematics_list = [
+            eval(element.replace("(", "[").replace(")", "]"))
+            for element in wiring_schematics
+        ]
+        target_joltage = eval(target_joltage.replace("{", "[").replace("}", "]"))
+        initialization_info_list.append(
+            (
+                start_state,
+                target_state,
+                wiring_schematics_list,
+                target_joltage,
+            )
+        )
+
+    # initialization_info = initialization_info_list[0]
+
+    # solve_row_part_two(*initialization_info)
+
+    total = 0
+
+    for initialization_info in initialization_info_list:
+        total += solve_row_part_two(*initialization_info)
+    console.log(total)
 
 
 if __name__ == "__main__":

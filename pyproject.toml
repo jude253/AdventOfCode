@@ -27,6 +27,7 @@ dependencies = [
   "rich~=14.2.0",
   "numpy~=2.3.4",
   "pandas~=2.3.3",
+  "pulp~=2.9.0",
 ]
 
 [project.urls]
