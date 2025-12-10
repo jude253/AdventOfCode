@@ -14,7 +14,7 @@ def get_input_file_contents(file_path="input/day_08/input.txt"):
     return input_file_contents
 
 
-def part_one(input_file_contents: str):
+def part_one(input_file_contents: str, is_test=False):
     console.log("part_one")
     input_file_contents = input_file_contents.splitlines()
     points = np.array(
@@ -24,7 +24,8 @@ def part_one(input_file_contents: str):
     max_heap = []
     largest_cuircuit_limit = 3
     closest_pair_limit = 1_000
-    # closest_pair_limit = 10
+    if is_test:
+        closest_pair_limit = 10
 
     # console.log(points)
     seen_pair_set = set()
@@ -99,10 +100,93 @@ def part_one(input_file_contents: str):
 def part_two(input_file_contents: str):
     console.log("part_two")
     input_file_contents = input_file_contents.splitlines()
+    points = np.array(
+        [[int(x) for x in line.strip().split(",")] for line in input_file_contents]
+    )
+
+    # Build a min heap of all pairs sorted by distance
+    min_heap = []
+    seen_pair_set = set()
+
+    for cur_ind in range(points.shape[0]):
+        distances_from_cur_ind = np.linalg.norm(points - points[cur_ind], axis=1)
+        for other_ind in range(points.shape[0]):
+            if cur_ind == other_ind:
+                continue
+
+            cur_pair = tuple(sorted([cur_ind, other_ind]))
+
+            if cur_pair not in seen_pair_set:
+                cur_dist = distances_from_cur_ind[other_ind]
+                heapq.heappush(min_heap, (cur_dist, cur_pair))
+                seen_pair_set.add(cur_pair)
+
+    # Union-Find parent array: each node starts as its own parent
+    parent = list(range(points.shape[0]))
+
+    def find_root(index):
+        """Find the root parent of a cluster (with path compression)"""
+        if parent[index] != index:
+            parent[index] = find_root(parent[index])
+        return parent[index]
+
+    def union_clusters(index_a, index_b):
+        """Union two clusters, return True if they were in different clusters"""
+        root_a = find_root(index_a)
+        root_b = find_root(index_b)
+
+        if root_a == root_b:
+            return False
+
+        parent[root_b] = root_a
+        return True
+
+    def count_clusters():
+        """Count how many unique clusters exist"""
+        unique_roots = set()
+        for i in range(points.shape[0]):
+            unique_roots.add(find_root(i))
+        return len(unique_roots)
+
+    # Connect pairs in order of increasing distance until all in one cluster
+    last_connection = None
+
+    while min_heap:
+        cur_dist, (index_a, index_b) = heapq.heappop(min_heap)
+
+        # Try to union these two clusters
+        if union_clusters(index_a, index_b):
+            last_connection = (index_a, index_b)
+
+            # Check if we're done (all in one cluster)
+            if count_clusters() == 1:
+                break
+
+    # Calculate the product of X coordinates
+    if last_connection:
+        index_a, index_b = last_connection
+        x_coord_a = points[index_a][0]
+        x_coord_b = points[index_b][0]
+        result = x_coord_a * x_coord_b
+
+        console.log(f"Last connection: {points[index_a]} and {points[index_b]}")
+        console.log(f"X coordinates: {x_coord_a} * {x_coord_b} = {result}")
+    else:
+        console.log("No connections needed or something went wrong")
 
 
 if __name__ == "__main__":
-    input_file_contents = get_input_file_contents(file_path="input/day_08/test.txt")
+    test_input = get_input_file_contents(file_path="input/day_08/test.txt")
     input_file_contents = get_input_file_contents(file_path="input/day_08/input.txt")
-    # part_one(input_file_contents)
+
+    console.log("=== Testing with example ===")
+    part_one(test_input, is_test=True)
+
+    console.log("\n=== Running with actual input ===")
+    part_one(input_file_contents)
+
+    console.log("=== Testing with example ===")
+    part_two(test_input)
+
+    console.log("\n=== Running with actual input ===")
     part_two(input_file_contents)
